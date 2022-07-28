@@ -1,0 +1,251 @@
+package copl_ex1;
+
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+import java.awt.Font;
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
+import java.awt.Color;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.border.BevelBorder;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Calendar;
+import java.awt.event.ActionEvent;
+
+public class Dashboard extends JFrame {
+
+	private JPanel contentPane;
+	JLabel lbluserT;
+	private JTable tableView;
+	private JTextField txtStudentNo;
+	private JTextField txtStudentName;
+	private JTextField txtAddress;
+	private JTextField txtSearch;
+
+	
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					Dashboard frame = new Dashboard();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	public Dashboard() {
+		setTitle("Dashboard");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 924, 463);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.GRAY);
+		contentPane.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("STUDENT RECORD SYSTEM");
+		lblNewLabel.setFont(new Font("Microsoft Himalaya", Font.BOLD, 34));
+		lblNewLabel.setBounds(47, 98, 587, 53);
+		contentPane.add(lblNewLabel);
+		
+		lbluserT = new JLabel();
+		lbluserT.setFont(new Font("Tahoma", Font.PLAIN, 30));
+		lbluserT.setBounds(23, 11, 277, 29);
+		contentPane.add(lbluserT);
+		
+		tableView = new JTable();
+		tableView.setBounds(432, 76, 386, 294);
+		contentPane.add(tableView);
+		
+		txtStudentNo = new JTextField();
+		txtStudentNo.setBounds(177, 147, 194, 20);
+		contentPane.add(txtStudentNo);
+		txtStudentNo.setColumns(10);
+		
+		txtStudentName = new JTextField();
+		txtStudentName.setColumns(10);
+		txtStudentName.setBounds(177, 179, 194, 20);
+		contentPane.add(txtStudentName);
+		
+		txtAddress = new JTextField();
+		txtAddress.setColumns(10);
+		txtAddress.setBounds(177, 210, 194, 20);
+		contentPane.add(txtAddress);
+		
+		JLabel lblNewLabel_1 = new JLabel("Student Number");
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.LEFT);
+		lblNewLabel_1.setBounds(47, 150, 120, 14);
+		contentPane.add(lblNewLabel_1);
+		
+		JLabel lblNewLabel_2 = new JLabel("Student Name");
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
+		lblNewLabel_2.setBounds(47, 182, 120, 14);
+		contentPane.add(lblNewLabel_2);
+		
+		JLabel lblNewLabel_3 = new JLabel("Address");
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.LEFT);
+		lblNewLabel_3.setBounds(47, 213, 95, 14);
+		contentPane.add(lblNewLabel_3);
+		
+		
+		
+		JButton btnAdd = new JButton("ADD");
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				addRecord(); //call to the add method
+			}
+		});
+		
+		
+		
+		btnAdd.setBounds(177, 241, 89, 23);
+		contentPane.add(btnAdd);
+		
+		
+		
+		JButton btnView = new JButton("VIEW");
+		btnView.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				viewRecords();
+			}
+		});
+		
+		
+		
+		btnView.setBounds(230, 275, 89, 23);
+		contentPane.add(btnView);
+		
+		JButton btnClear = new JButton("CLEAR");
+		btnClear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clearTextfield();
+			}
+		});
+		btnClear.setBounds(282, 242, 89, 23);
+		contentPane.add(btnClear);
+		
+		JLabel lblNewLabel_1_1 = new JLabel("Search");
+		lblNewLabel_1_1.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblNewLabel_1_1.setBounds(372, 51, 95, 14);
+		contentPane.add(lblNewLabel_1_1);
+		
+		txtSearch = new JTextField();
+		txtSearch.setColumns(10);
+		txtSearch.setBounds(474, 48, 344, 20);
+		contentPane.add(txtSearch);
+	}
+	
+	
+	//DB Connection
+	static Connection connect() {
+		try {
+			//set the mysql driver
+			String myDriver ="com.mysql.cj.jdbc.Driver";
+			//Connection string
+			String url = "jdbc:mysql://localhost:3306/copl_db";
+			Class.forName(myDriver);
+			return (Connection) DriverManager.getConnection(url,"root","");
+		}catch(Exception e) {
+			System.out.print("Cannot connect to the database...");
+		}
+		return null;
+	}
+	
+	//ADD record method
+	private void addRecord() {
+		Connection con = connect();
+		Calendar date = Calendar.getInstance();
+		java.sql.Date datecreated = new java.sql.Date(date.getTime().getTime());
+		
+		try {
+			String sql = "INSERT INTO student_tbl (student_no, student_name, address, date_created) VALUES(?,?,?,NOW())";
+			
+			PreparedStatement ps =(PreparedStatement) con.prepareStatement(sql);
+			ps.setString(1, txtStudentNo.getText());
+			ps.setString(2, txtStudentName.getText());
+			ps.setString(3, txtAddress.getText());
+			//ps.setDate(4, datecreated);
+			ps.execute();
+			
+			JOptionPane.showMessageDialog(null, "Record successfully added...");
+			clearTextfield();
+		}catch(Exception e) {
+			System.out.print("Error..." + e);
+		}
+	}
+	
+	//VIEW record method
+	private void viewRecords(){
+		Connection con = connect();
+		DefaultTableModel mod = new DefaultTableModel();
+		
+		mod.addColumn("Number");
+		mod.addColumn("Student No");
+		mod.addColumn("Student Name");
+		mod.addColumn("Address");
+		mod.addColumn("Date of Registration");
+		
+		try {
+			String sql = "SELECT * from student_tbl";
+			Statement st = (Statement) con.createStatement();
+			ResultSet rs = st.executeQuery(sql);
+			while(rs.next()) {
+				mod.addRow(new Object[]{
+					rs.getInt("id"),
+					rs.getString("student_no"),
+					rs.getString("student_name"),
+					rs.getString("address"),
+					rs.getString("date_created"),
+					
+				});
+			}
+			rs.close();
+			st.close();
+			con.close();
+			
+			tableView.setModel(mod);
+			tableView.setAutoResizeMode(0);
+			tableView.getColumnModel().getColumn(0).setPreferredWidth(10);
+			tableView.getColumnModel().getColumn(1).setPreferredWidth(30);
+			tableView.getColumnModel().getColumn(2).setPreferredWidth(30);
+			tableView.getColumnModel().getColumn(3).setPreferredWidth(30);
+			tableView.getColumnModel().getColumn(4).setPreferredWidth(20);
+			
+		}catch(Exception ex) {
+			System.out.print("Error: " + ex);
+		}
+		
+	}
+	
+	
+	
+	
+	//Clear method
+	private void clearTextfield() {
+		txtStudentNo.setText("");
+		txtStudentName.setText("");
+		txtAddress.setText("");
+	}
+	
+}
